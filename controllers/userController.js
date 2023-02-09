@@ -3,6 +3,8 @@ import User from '../models/userModel.js'
 import sendEmail, { generateOtp } from '../utils.js/sendEmail.js'
 import EmailVerificationToken from '../models/emailVerificationTokenModel.js'
 import { isValidObjectId } from 'mongoose'
+import PasswordResetToken from '../models/passwordReserTokenModel.js'
+import { generateRandomByte } from '../utils.js/helper.js'
 
 // @desc    Register a new user
 // @route   POST /api/v1/users
@@ -107,11 +109,9 @@ const verifyEmail = asyncHandler(async (req, res) => {
   }
 })
 
-
 // @desc    Resend email verification token
 // @route   POST /api/v1/users/resend-email-verification-token
 // @access  Public
-
 
 const resendEmailVerificationToken = asyncHandler(async (req, res) => {
   const { userId } = req.body
@@ -164,4 +164,61 @@ const resendEmailVerificationToken = asyncHandler(async (req, res) => {
   }
 })
 
-export { registerUser, verifyEmail, resendEmailVerificationToken }
+// @desc    Forget Password
+// @route   POST /api/v1/users/forget-password
+// @access  Public
+
+const forgetPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body
+  if (!email) {
+    res.status(400)
+    throw new Error('Email is required')
+  }
+  const user = await User.findOne({ email })
+  if (!user) {
+    res.status(400)
+    throw new Error('User not found')
+  }
+  const alreadyHasToken = await PasswordResetToken.findOne({
+    owner: user._id,
+  })
+  if (alreadyHasToken) {
+    res.status(400)
+    throw new Error('Already has token')
+  }
+
+  const token = await generateRandomByte()
+
+  const newPasswordResetToken = await PasswordResetToken({
+    owner: user._id,
+    token,
+  })
+  await newPasswordResetToken.save()
+
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}&id=${user._id}`
+  const message = `
+      <p>Click here to reset password</p>
+      <a href='${resetUrl}'>Change Password</a>
+    `
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Password reset token',
+      message,
+    })
+    res
+      .status(200)
+      .json({ success: true, message: `Email send to ${user.email}` })
+  } catch (err) {
+    res.status(500)
+    throw new Error('Email could not be sent')
+  }
+})
+
+export {
+  registerUser,
+  verifyEmail,
+  resendEmailVerificationToken,
+  forgetPassword,
+}
