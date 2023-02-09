@@ -226,10 +226,55 @@ const sendResetPasswordTokenStatus = (req, res) => {
 }
 
 
+// @desc    Reset Password
+// @route   POST /api/v1/users/reset-password
+// @access  Public
+const resetPassword = asyncHandler(async (req, res) => {
+  const { newPassword, userId } = req.body
+  const user = await User.findById(userId)
+  const matched = await user.matchPassword(newPassword)
+  if (matched) { 
+    res.status(400)
+    throw new Error('New password must be different from old password')
+  }
+
+  user.password = newPassword
+  await user.save()
+  await PasswordResetToken.findByIdAndDelete(req.resetToken._id)
+
+  const message = `<h1>Password Reset Successfully</h1>
+      <p>Now you can use new password.</p>`
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Password Reset Successfully',
+      message,
+    })
+
+    res.status(200).json({
+      success: true,
+      message: `Password reset successfully, now you can use new password.`,
+    })
+  } catch (error) {
+    res.status(500)
+    throw new Error('Email could not be sent')
+  }
+
+
+
+
+
+
+})
+
+
+
 export {
   registerUser,
   verifyEmail,
   resendEmailVerificationToken,
   forgetPassword,
   sendResetPasswordTokenStatus,
+  resetPassword,
 }

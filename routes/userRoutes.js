@@ -1,6 +1,6 @@
 import express from 'express'
-import { forgetPassword, registerUser, resendEmailVerificationToken, sendResetPasswordTokenStatus, verifyEmail } from '../controllers/userController.js'
-import { userValidtor, validate } from '../middleware/validator.js'
+import { forgetPassword, registerUser, resendEmailVerificationToken, resetPassword, sendResetPasswordTokenStatus, verifyEmail } from '../controllers/userController.js'
+import { userValidtor, validate, validatePassword } from '../middleware/validator.js'
 import { isValidPassResetToken } from '../middleware/authMiddleware.js'
 const router = express.Router()
 
@@ -15,6 +15,15 @@ router.post(
   isValidPassResetToken,
   sendResetPasswordTokenStatus
 )
+
+router.post(
+  '/reset-password',
+  validatePassword,
+  validate,
+  isValidPassResetToken,
+  resetPassword
+)
+
 
 
 export default router

@@ -9,7 +9,17 @@ const userValidtor = [
     .isEmpty()
     .withMessage('Password is missing!')
     .isLength({ min: 6, max: 20 })
-    .withMessage('Password must be 8 to 20 characters long!'),
+    .withMessage('Password must be 6 to 20 characters long!'),
+]
+
+const validatePassword = [
+  check('newPassword')
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage('Password is missing!')
+    .isLength({ min: 6, max: 20 })
+    .withMessage('Password must be 6 to 20 characters long!'),
 ]
 
 const validate = (req, res, next) => {
@@ -20,4 +30,4 @@ const validate = (req, res, next) => {
   next()
 }
 
-export { userValidtor, validate }
+export { userValidtor, validate, validatePassword }
