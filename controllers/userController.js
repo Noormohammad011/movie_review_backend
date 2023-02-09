@@ -216,9 +216,20 @@ const forgetPassword = asyncHandler(async (req, res) => {
   }
 })
 
+
+
+// @desc    Send reset password token status
+// @route   POST /api/v1/users/verify-pass-reset-token
+// @access  Public
+const sendResetPasswordTokenStatus = (req, res) => {
+  res.json({ valid: true })
+}
+
+
 export {
   registerUser,
   verifyEmail,
   resendEmailVerificationToken,
   forgetPassword,
+  sendResetPasswordTokenStatus,
 }
