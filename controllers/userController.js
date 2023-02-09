@@ -1,5 +1,7 @@
 import asyncHandler from 'express-async-handler'
 import User from '../models/userModel.js'
+import sendEmail, { generateOtp } from '../utils.js/sendEmail.js'
+import EmailVerificationToken from '../models/emailVerificationTokenModel.js'
 
 // @desc    Register a new user
 // @route   POST /api/v1/users
@@ -19,17 +21,33 @@ const registerUser = asyncHandler(async (req, res) => {
     email,
     password,
   })
-  //checking if user created
-  if (user) {
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
+
+  //generate 6 digit otp
+  let OTP = generateOtp()
+  await EmailVerificationToken.create({
+    owner: user._id,
+    token: OTP,
+  })
+
+  const message = `<p>Your verification OTP</p>
+      <h1>${OTP}</h1>`
+
+  //send email
+  try {
+    await sendEmail({
       email: user.email,
-      token: user.getSignedJwtToken(),
+      subject: 'Password reset token',
+      message,
     })
-  } else {
-    res.status(400)
-    throw new Error('Invalid user data')
+
+    res.status(200).json({
+      success: true,
+      message: `Please verify your email. OTP has been sent to your email accont!`,
+    })
+  } catch (error) {
+    user.remove()
+    res.status(500)
+    throw new Error('Email could not be sent')
   }
 })
 

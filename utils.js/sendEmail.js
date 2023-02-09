@@ -14,10 +14,16 @@ const sendEmail = async (options) => {
     from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
     to: options.email,
     subject: options.subject,
-    text: options.message,
+    html: options.message,
   }
   await transporter.sendMail(message) 
 }
+
+
+export const generateOtp = () => {
+  return Math.floor(100000 + Math.random() * 900000)
+}
+
 
 export default sendEmail
 
