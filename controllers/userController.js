@@ -25,7 +25,8 @@ const registerUser = asyncHandler(async (req, res) => {
 
   //generate 6 digit otp
   let OTP = generateOtp()
-  await EmailVerificationToken.create({
+
+  const newEmailVerificationToken = await EmailVerificationToken.create({
     owner: user._id,
     token: OTP,
   })
@@ -47,11 +48,11 @@ const registerUser = asyncHandler(async (req, res) => {
     })
   } catch (error) {
     user.remove()
+    newEmailVerificationToken.remove()
     res.status(500)
     throw new Error('Email could not be sent')
   }
 })
-
 
 // @desc    Verify user email
 // @route   POST /api/v1/users/verify-email
@@ -106,4 +107,61 @@ const verifyEmail = asyncHandler(async (req, res) => {
   }
 })
 
-export { registerUser, verifyEmail }
+
+// @desc    Resend email verification token
+// @route   POST /api/v1/users/resend-email-verification-token
+// @access  Public
+
+
+const resendEmailVerificationToken = asyncHandler(async (req, res) => {
+  const { userId } = req.body
+  const user = await User.findById(userId)
+  if (!user) {
+    res.status(400)
+    throw new Error('User not found')
+  }
+  if (user.isVerified) {
+    res.status(400)
+    throw new Error('User already verified')
+  }
+
+  const alreadyHasToken = await EmailVerificationToken.findOne({
+    owner: userId,
+  })
+
+  if (alreadyHasToken) {
+    res.status(400)
+    throw new Error('Already has token')
+  }
+
+  let OTP = generateOtp()
+
+  const newEmailVerificationToken = new EmailVerificationToken({
+    owner: userId,
+    token: OTP,
+  })
+
+  await newEmailVerificationToken.save()
+
+  const message = `<p>Your verification OTP</p>
+
+      <h1>${OTP}</h1>`
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'OTP SEND',
+      message,
+    })
+
+    res.status(200).json({
+      success: true,
+      message: `New OTP has been sent to your registered email accout.`,
+    })
+  } catch (error) {
+    res.status(500)
+    throw new Error('Email could not be sent')
+  }
+})
+
+export { registerUser, verifyEmail, resendEmailVerificationToken }
