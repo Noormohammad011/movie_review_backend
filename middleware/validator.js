@@ -22,6 +22,11 @@ const validatePassword = [
     .withMessage('Password must be 6 to 20 characters long!'),
 ]
 
+const signInValidator = [
+  check('email').normalizeEmail().isEmail().withMessage('Email is invalid!'),
+  check('password').trim().not().isEmpty().withMessage('Password is missing!'),
+]
+
 const validate = (req, res, next) => {
   const error = validationResult(req).array()
   if (error.length) {
@@ -30,4 +35,4 @@ const validate = (req, res, next) => {
   next()
 }
 
-export { userValidtor, validate, validatePassword }
+export { userValidtor, validate, validatePassword, signInValidator }

@@ -260,11 +260,33 @@ const resetPassword = asyncHandler(async (req, res) => {
     res.status(500)
     throw new Error('Email could not be sent')
   }
+})
 
 
 
+// @desc    Sign in user
+// @route   POST /api/v1/users/sign-in
+// @access  Public
 
 
+const signIn = asyncHandler(async (req, res) => {
+  const { email, password } = req.body
+  const user = await User.findOne({ email })
+  if (!user) {
+    res.status(400)
+    throw new Error('Invalid email or password')
+  }
+  if (user && (await user.matchPassword(password))) {
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      token: user.getSignedJwtToken(),
+    })
+  } else {
+    res.status(401)
+    throw new Error('Invalid email or password')
+  }
 
 })
 
@@ -277,4 +299,5 @@ export {
   forgetPassword,
   sendResetPasswordTokenStatus,
   resetPassword,
+  signIn,
 }
