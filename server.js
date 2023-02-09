@@ -11,13 +11,7 @@ import compression from 'express-compression'
 import { notFound, errorHandler } from './middleware/errorMiddleware.js'
 import { v2 as cloudinary } from 'cloudinary'
 //import router
-// import productRoutes from './routes/productRoutes.js'
-// import authRoutes from './routes/authRoutes.js'
-// import orderRoutes from './routes/orderRoutes.js'
-// import reviewsRoutes from './routes/reviewRoutes.js'
-// import uploadRoutes from './routes/uploadRoutes.js'
-// import paymentRoutes from './routes/paymentRoutes.js'
-
+import userRoutes from './routes/userRoutes.js'
 //import middlewares
 import morgan from 'morgan'
 import path from 'path'
@@ -69,12 +63,8 @@ app.use(hpp())
 app.use(express.static(path.join(path.dirname(''), 'public')))
 
 //route mount
-// app.use('/api/v1/products', productRoutes)
-// app.use('/api/v1/orders', orderRoutes)
-// app.use('/api/v1/auth', authRoutes)
-// app.use('/api/v1/reviews', reviewsRoutes)
-// app.use('/api/v1/upload', uploadRoutes)
-// app.use('/api/vi/payment', paymentRoutes)
+app.use('/api/v1/user', userRoutes)
+
 
 
 app.get('/', (req, res) => {

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-
+import slugify from 'slugify'
 const userSchema = mongoose.Schema(
   {
     name: {
@@ -9,6 +9,7 @@ const userSchema = mongoose.Schema(
       trim: true,
       required: true,
     },
+    slug: String,
     email: {
       type: String,
       trim: true,
@@ -38,6 +39,12 @@ userSchema.pre('save', async function (next) {
 
   const salt = await bcrypt.genSalt(10)
   this.password = await bcrypt.hash(this.password, salt)
+})
+
+// Create user slug from name
+userSchema.pre('save', function (next) {
+  this.slug = slugify(this.name, { lower: true })
+  next()
 })
 
 // Sign JWT and return
