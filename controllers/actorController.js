@@ -90,17 +90,16 @@ const getLatestActors = asyncHandler(async (req, res) => {
   const actors = await Actor.find({})
     .sort({ createdAt: -1 })
     .limit(12)
-    .map((actor) => formatActor(actor))
-  res.status(200).json(actors)
+  res.status(200).json(actors.map((actor) => formatActor(actor)))
 })
 
 const getSingleActor = asyncHandler(async (req, res) => {
-    const { id } = req.params
-    if(!isValidObjectId(id)){
-        res.status(400)
-        throw new Error('Invalid actor id')
+    const { actorId } = req.params
+    if (!isValidObjectId(actorId)) {
+      res.status(400)
+      throw new Error('Invalid actor id')
     }
-    const actor = await Actor.findById(id)
+    const actor = await Actor.findById(actorId)
     if (!actor) { 
         res.status(404)
         throw new Error('Actor not found')

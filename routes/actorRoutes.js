@@ -15,12 +15,12 @@ const router = express.Router()
 router
   .route('/')
   .post(upload.single('avatar'), actorInfoValidator, validate, createActor)
+router.route('/search').get(searchActor)
+router.route('/latest-uploads').get(getLatestActors)
 router
   .route('/:actorId')
   .put(upload.single('avatar'), actorInfoValidator, validate, updateActor)
   .delete(removeActor)
-    .get(getSingleActor)
-router.route('/search').get(searchActor)
-router.route('/latest-uploads').get(getLatestActors)
+  .get(getSingleActor)
 
 export default router
