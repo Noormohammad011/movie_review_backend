@@ -12,6 +12,7 @@ import { notFound, errorHandler } from './middleware/errorMiddleware.js'
 import { v2 as cloudinary } from 'cloudinary'
 //import router
 import userRoutes from './routes/userRoutes.js'
+import actorRoutes from './routes/actorRoutes.js'
 //import middlewares
 import morgan from 'morgan'
 import path from 'path'
@@ -64,7 +65,7 @@ app.use(express.static(path.join(path.dirname(''), 'public')))
 
 //route mount
 app.use('/api/v1/user', userRoutes)
-
+app.use('/api/v1/actors', actorRoutes)
 
 
 app.get('/', (req, res) => {
