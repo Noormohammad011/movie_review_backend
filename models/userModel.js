@@ -25,6 +25,11 @@ const userSchema = mongoose.Schema(
       required: true,
       default: false,
     },
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user',
+    },
   },
   {
     timestamps: true,
@@ -57,7 +62,6 @@ userSchema.methods.getSignedJwtToken = function () {
     expiresIn: process.env.JWT_EXPIRE,
   })
 }
-
 
 const User = mongoose.model('User', userSchema)
 

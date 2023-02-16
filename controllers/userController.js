@@ -281,6 +281,8 @@ const signIn = asyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      isVerified: user.isVerified,
+      role: user.role,
       token: user.getSignedJwtToken(),
     })
   } else {

@@ -1,59 +1,54 @@
 import User from '../models/userModel.js'
 import jwt from 'jsonwebtoken'
-// import ErrorResponse from '../utils.js/errorResponse.js'
-import expressAsyncHandler from 'express-async-handler'
+
+import asyncHandler from 'express-async-handler'
 import { isValidObjectId } from 'mongoose'
 import PasswordResetToken from '../models/passwordReserTokenModel.js'
 
-// // Protect routes
-// const protect = expressAsyncHandler(async (req, res, next) => {
-//   let token
+// Protect routes
+const protect = asyncHandler(async (req, res, next) => {
+  let token
 
-//   if (
-//     req.headers.authorization &&
-//     req.headers.authorization.startsWith('Bearer')
-//   ) {
-//     // Set token from Bearer token in header
-//     token = req.headers.authorization.split(' ')[1]
-//     // Set token from cookie
-//   }
-//   // else if (req.cookies.token) {
-//   //   token = req.cookies.token;
-//   // }
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1]
+  }
 
-//   // Make sure token exists
-//   if (!token) {
-//     return next(new ErrorResponse('Not authorized to access this route', 401))
-//   }
+  // Make sure token exists
+  if (!token) {
+    res.status(401)
+    throw new Error('Not authorized to access this route')
+  }
 
-//   try {
-//     // Verify token
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET)
+  try {
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
-//     req.user = await User.findById(decoded.id)
+    req.user = await User.findById(decoded.id)
 
-//     next()
-//   } catch (err) {
-//     return next(new ErrorResponse('Not authorized to access this route', 401))
-//   }
-// })
+    next()
+  } catch (err) {
+    res.status(401)
+    throw new Error('Not authorized to access this route')
+  }
+})
 
-// // Grant access to specific roles
-// const authorize = (...roles) => {
-//   return (req, res, next) => {
-//     if (!roles.includes(req.user.role)) {
-//       return next(
-//         new ErrorResponse(
-//           `User role ${req.user.role} is not authorized to access this route`,
-//           403
-//         )
-//       )
-//     }
-//     next()
-//   }
-// }
+// Grant access to specific roles
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      res.status(403)
+      throw new Error(
+        `User role ${req.user.role} is not authorized to access this route`
+      )
+    }
+    next()
+  }
+}
 
-const isValidPassResetToken = expressAsyncHandler(async (req, res, next) => {
+const isValidPassResetToken = asyncHandler(async (req, res, next) => {
   const { token, userId } = req.body
   if (!token.trim() || !isValidObjectId(userId)) {
     res.status(400)
@@ -75,4 +70,4 @@ const isValidPassResetToken = expressAsyncHandler(async (req, res, next) => {
   next()
 })
 
-export { isValidPassResetToken }
+export { isValidPassResetToken, authorize, protect }
